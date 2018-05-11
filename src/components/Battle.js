@@ -1,7 +1,37 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 
 // Dont understand why we need to listen for changes to the input when we aren't using the input until the the submit button is clicked
+
+function PlayerPreview(props) {
+  return (
+    <div>
+      <div className="column">
+        <img
+          className="avatar"
+          src={props.avatar}
+          alt={`Avatar for ${props.username}`}
+        />
+        <h2 className="username">@{props.username}</h2>
+      </div>
+      <button
+        className="reset"
+        // use bind to return a brand new function
+        onClick={props.onReset.bind(null, props.id)}
+      >
+        Reset
+      </button>
+    </div>
+  );
+}
+
+PlayerPreview.propTypes = {
+  avatar: PropTypes.string.isRequired,
+  username: PropTypes.string.isRequired,
+  id: PropTypes.string.isRequired,
+  onReset: PropTypes.func.isRequired
+};
 
 class PlayerInput extends React.Component {
   state = {
@@ -73,9 +103,21 @@ class Battle extends React.Component {
       return newState;
     });
   };
+
+  handleReset = (id) => {
+    this.setState(() => {
+      let newState = {};
+      newState[id + 'Name'] = '';
+      newState[id + 'Image'] = null;
+    });
+  };
+
   render() {
+    const match = this.props.match;
     const playerOneName = this.state.playerOneName;
     const playerTwoName = this.state.playerTwoName;
+    const playerOneImage = this.state.playerOneImage;
+    const playerTwoImage = this.state.playerTwoImage;
 
     return (
       <div>
@@ -88,6 +130,24 @@ class Battle extends React.Component {
             />
           )}
 
+          {playerOneImage !== null && (
+            <PlayerPreview
+              avatar={playerOneImage}
+              username={playerOneName}
+              onReset={this.handleReset}
+              id="playerOne"
+            />
+          )}
+
+          {playerTwoImage !== null && (
+            <PlayerPreview
+              avatar={playerTwoImage}
+              username={playerTwoName}
+              onReset={this.handleReset}
+              id="playerTwo"
+            />
+          )}
+
           {!playerTwoName && (
             <PlayerInput
               id="playerTwo"
@@ -96,6 +156,19 @@ class Battle extends React.Component {
             />
           )}
         </div>
+
+        {playerOneImage &&
+          playerTwoImage && (
+            <Link
+              className="button"
+              to={{
+                pathname: `${match.url}/results`,
+                search: `?playerOneName=${playerOneName}&playerTwoName=${playerTwoName}`
+              }}
+            >
+              Battle
+            </Link>
+          )}
       </div>
     );
   }
